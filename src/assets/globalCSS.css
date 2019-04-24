@@ -1,0 +1,81 @@
+/* 基础公共样式css调整文件 */
+body{overflow: hidden;}
+ul,li{list-style: none;}
+
+/* 修改自定义弹窗的默认样式 modal的样式要放到最外面，否则在组件中样式是给不到的 */
+.ivu-modal{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: inherit !important;
+  height: 100%;
+}
+.ivu-modal-content{
+  width: 100%;
+  border-radius: 0;
+}
+.ivu-btn{
+  display: none;
+}
+.ivu-modal .ivu-input{
+  height: 2rem !important;
+  margin-top: 1rem;
+}
+.ivu-input:focus{
+  border-color: #3780FC !important;
+  box-shadow: none !important;
+}
+
+/*定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/
+::-webkit-scrollbar
+{
+    width: 5px;
+    height: 5px;
+    background-color: #F5F5F5;
+}
+
+/*定义滚动条轨道 内阴影+圆角*/
+::-webkit-scrollbar-track
+{
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    background-color: #F5F5F5;
+}
+
+/*定义滑块 内阴影+圆角*/
+::-webkit-scrollbar-thumb
+{
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: #D7D8DF;
+}
+
+/* 清除导航点击时候出现的灰色边框 */
+a:focus{
+  --webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.visual_Scroll{
+  height: 90vh;
+}
+@media screen and (min-width: 1440px) and (max-width: 1679px) {
+  .visual_Scroll{
+    height: 88vh;
+  }
+}
+@media screen and (width: 1366px) {
+  .visual_Scroll{
+    height: 90vh;
+  }
+}
+@media screen and (min-width: 1151px) and (max-width: 1280px)  {
+  .visual_Scroll{
+    height: 90vh;
+  }
+}
+@media screen and (min-width: 1024px) and (max-width: 1150px)  {
+  .visual_Scroll{
+    height: 85vh;
+  }
+}
