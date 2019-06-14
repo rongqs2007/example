@@ -104,5 +104,16 @@ export const ProcessDatas = {
   destroyed () {
     // 清除定时器,最优化放在这里 无论是删除原件还是跳转到其他页面
     EventBus.$off()
+  },
+  watch: {
+    // 监听路由地址
+    '$route.path' (newval, oldval) {
+      console.log(newval, oldval)
+    },
+    // to , from 分别表示从哪跳转到哪，都是一个对象
+    // to.path  ( 表示的是要跳转到的路由的地址 eg: /home )
+    $route (to, from) {
+      console.log(to, from)
+    }
   }
 }

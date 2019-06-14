@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" /> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+<title>湖南省疫苗库存点展示图</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link href="" rel="stylesheet">
+<style type="text/css">  
+html{height:100%}  
+body{height:100%;margin:0px;padding:0px}  
+#container{height:100%}  
+</style>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=4GKOZZCm6mjrjBFzrjFPoqwSMtwQcvIs">
+// v3.0版本的引用方式：src="http://api.map.baidu.com/api?v=3.0&ak=您的密钥"
+</script>
+<!-- 点聚合js文件 -->
+<script type="text/javascript" src="http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js"></script>
+<!-- 绘制曲线js文件 -->
+<script type="text/javascript" src="http://api.map.baidu.com/library/CurveLine/1.5/src/CurveLine.min.js"></script>
+</head>
+<body>
+  <div id="container"></div>
+  <script>
+    // 填充颜色集合
+    let fillColor = ['#ABC321','#BA3C33','#C33C34','#D43C35','#E63C36','#E63C37','#E63C38','#E63C39','#E63C41','#E63C42','#E63C43','#E63C44','#E63C45','#E63C46','#E63C47','#E63C48']
+    let citys = ['湖南', '湖南省长沙市', '湖南省岳阳市', '湖南省常德市', '湖南省衡阳市', '湖南省株洲市', '湖南省郴州市', '湖南省湘潭市', '湖南省永州市', '湖南省邵阳市', '湖南省益阳市', '湖南省怀化市', '湖南省娄底市', '湖南省湘西州', '湖南省张家界市']
+    // 向地图添加湖南省地级市中心点的标注
+    let citysCenters = [[112.94995686314348, 28.24290780342998], [113.13852915573575, 29.365103577584573], [111.70583966445537, 29.036196868141612], [112.58201092637805, 26.898530441340593], [113.14082881784053, 27.836848709812685], [113.02814537470611, 25.777486437647323], [112.95455618735303, 27.834804306751842], [111.62075216657837, 26.425344381825504], [111.47702328502938, 27.24748704536627], [112.36584268852835, 28.56013815308687], [110.01098869322962, 27.576898694369234], [112.00249607597249, 27.70797536767105], [109.78102248275124, 28.756905173652765], [110.48931841102468, 29.123067141692292]]
+    // 创建和初始化地图函数：
+    function initMap () {
+      // 循环实现地图展示
+      for (let i = 0; i < citys.length; i++) {
+        if (citys[i] === '湖南') {
+          getBoundary(citys[i], i)
+        } else {
+          setTimeout(() => {
+            getBoundary(citys[i], i)
+          }, 200)
+        }
+      }
+      createMap()
+      // setMapEvent() // 设置地图事件
+      addMapControl() // 向地图添加控件
+      addMarker() // 向地图中添加marker
+    }
+    function createMap () {
+      // 创建地图实例
+      let map = new BMap.Map('container')
+      // 创建坐标点
+      let point = new BMap.Point(112.94995686314348, 28.24290780342998)
+      // 初始化地图，设置中心点坐标和地图级别
+      map.centerAndZoom(point, 8)
+      // 设置地图显示的城市 此项是必须设置的
+      map.setCurrentCity('湖南')
+      // 开启鼠标滚轮缩放
+      map.enableScrollWheelZoom(true)
+      // 将map point变量存储在全局
+      window.map = map
+      window.point = point
+    }
+    // 地图控件添加函数
+    function addMapControl () {
+      // 修改控件配置
+      let optsType = {type: BMAP_NAVIGATION_CONTROL_LARGE}
+      // 平移缩放控件  PC端默认位于地图左上方，它包含控制地图的平移和缩放的功能。移动端提供缩放控件，默认位于地图右下方
+      map.addControl(new BMap.NavigationControl(optsType))
+      // 比例尺  默认位于地图左下方，显示地图的比例关系
+      map.addControl(new BMap.ScaleControl())
+      // 地图类型  默认位于地图右上方
+      map.addControl(new BMap.MapTypeControl({
+          mapTypes: [BMAP_NORMAL_MAP, BMAP_HYBRID_MAP]
+      }))
+      // 缩略地图  默认位于地图右下方，是一个可折叠的缩略地图
+      map.addControl(new BMap.OverviewMapControl())
+      // 定位  针对移动端开发，默认位于地图左下方
+      // map.addControl(new BMap.GeolocationControl())
+    }
+    
+    // 获取地区边界
+    function getBoundary (cityName, index) {
+      let bdary = new BMap.Boundary()
+      // 获取行政区域
+      bdary.get(cityName, (res) => {
+        // console.log(res)
+        let count = res.boundaries.length // 行政区域的点有多少个
+        if (count === 0) {
+          alert('未能获取当前输入行政区域')
+          return
+        }
+        let pointArray = []
+        for (let i = 0; i < count; i++) {
+          let ply = new BMap.Polygon(res.boundaries[i], {
+            strokeWeight: 1,
+            strokeColor: '#000',
+            fillOpacity: 1,
+            fillColor: fillColor[index]
+          }) // 建立多边形覆盖物
+          map.addOverlay(ply) // 添加覆盖物
+          pointArray = pointArray.concat(ply.getPath())
+        }
+        if (cityName === '湖南') {
+          map.setViewport(pointArray) // 调整视野
+        }        
+      })
+    }
+    
+    // 定义标注图标 通过Icon类可实现自定义标注的图标，下面示例通过参数MarkerOptions的icon属性进行设置，也可以使用marker.setIcon()方法。
+    // 编写自定义函数，创建标注
+    // 生成icon
+    function createIcon (point) {
+      // 定义一个空数组接受地图标注用于点聚合使用
+      let markerPoints = []
+      // 自定义矢量icon
+      // 创建标注对象并添加到地图
+      let marker = new BMap.Marker(new BMap.Point(point.lng, point.lat), {
+        // 初始化小飞机Symbol
+        icon: new BMap.Symbol(BMap_Symbol_SHAPE_POINT, {
+          scale: 1.2,// 图标缩放大小
+          fillColor: '#8908ff',// 填充颜色
+          // rotation: 30,
+          fillOpacity: 1// 填充透明度
+        })
+      })
+      markerPoints.push(marker)
+      map.addOverlay(marker)
+      createLine()
+      // 事件监听
+      marker.addEventListener('click', () => {
+        console.log('被点击了')
+      })
+      // 可拖拽标注
+      // marker.enableDragging()
+      marker.addEventListener('dragend', (e) => {
+        console.log('当前位置: ' + e.point.lng + e.point.lat)
+      })
+    }
+    // 定义一个空数组接受地图绘制曲线使用
+    let doubleCitys = []
+    // 创建标注点
+    function addMarker () {
+      console.log(citysCenters)
+      doubleCitys.push(point)
+      for (let i = 0; i < citysCenters.length; i++) {
+        let points = new BMap.Point(citysCenters[i][0], citysCenters[i][1])
+        if (i !== 0) {
+          doubleCitys.push(points)
+        }
+        createIcon(points)
+      }
+    }
+    // 创建弧线对象
+    function createLine () {
+      let curve = new BMapLib.CurveLine(doubleCitys, {strokeColor: 'blue', strokeWeight: 3, strokeOpacity: 0.5})
+      // 添加到地图中
+      map.addOverlay(curve)
+    }
+    // 点聚合
+    // let markerClusterer = new BMapLib.MarkerClusterer(map, {markers: markerPoints})
+    initMap()
+    // console.log(map)
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-
+import EventBus from './EventBus'
 // 改变浏览器窗口的时候图形跟随容器大小改变自适应
 export function changeResize (objID) {
   // 针对页面中多个echarts图标跟随浏览器大小改变而缩放时候使用
@@ -138,4 +138,19 @@ export function minSort (Arr) {
     }
   }
   return Arr
+}
+
+// 创建一个元素并将其插入元素集合内的第n个位置
+export function createEleLi (n, Tag, parentId, Content, Styles, Flag) {
+  let _li = document.createElement(Tag)
+  _li.innerHTML = Content
+  for (let i in Styles) {
+    _li.style[i] = Styles[i]
+  }
+  parentId.insertBefore(_li, parentId.childNodes[n])
+  if (Flag) {
+    _li.onclick = () => {
+      EventBus.$emit('onClick', _li)
+    }
+  }
 }
