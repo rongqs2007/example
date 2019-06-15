@@ -29,8 +29,15 @@ body{height:100%;margin:0px;padding:0px}
     let citys = ['湖南', '湖南省长沙市', '湖南省岳阳市', '湖南省常德市', '湖南省衡阳市', '湖南省株洲市', '湖南省郴州市', '湖南省湘潭市', '湖南省永州市', '湖南省邵阳市', '湖南省益阳市', '湖南省怀化市', '湖南省娄底市', '湖南省湘西州', '湖南省张家界市']
     // 向地图添加湖南省地级市中心点的标注
     let citysCenters = [[112.94995686314348, 28.24290780342998], [113.13852915573575, 29.365103577584573], [111.70583966445537, 29.036196868141612], [112.58201092637805, 26.898530441340593], [113.14082881784053, 27.836848709812685], [113.02814537470611, 25.777486437647323], [112.95455618735303, 27.834804306751842], [111.62075216657837, 26.425344381825504], [111.47702328502938, 27.24748704536627], [112.36584268852835, 28.56013815308687], [110.01098869322962, 27.576898694369234], [112.00249607597249, 27.70797536767105], [109.78102248275124, 28.756905173652765], [110.48931841102468, 29.123067141692292]]
+
+    // 定义一个空数组接受地图绘制曲线使用
+    let doubleCitys = []
+
     // 创建和初始化地图函数：
     function initMap () {
+      createMap()
+      // 向地图添加控件
+      addMapControl()
       // 循环实现地图展示
       for (let i = 0; i < citys.length; i++) {
         if (citys[i] === '湖南') {
@@ -41,14 +48,14 @@ body{height:100%;margin:0px;padding:0px}
           }, 200)
         }
       }
-      createMap()
       // setMapEvent() // 设置地图事件
-      addMapControl() // 向地图添加控件
-      addMarker() // 向地图中添加marker
+      // 向地图中添加marker
+      addMarker() 
     }
+
+    // 创建地图实例
     function createMap () {
-      // 创建地图实例
-      let map = new BMap.Map('container')
+      let map = new BMap.Map('container', {minZoom: 6, maxZoom: 8})
       // 创建坐标点
       let point = new BMap.Point(112.94995686314348, 28.24290780342998)
       // 初始化地图，设置中心点坐标和地图级别
@@ -61,6 +68,7 @@ body{height:100%;margin:0px;padding:0px}
       window.map = map
       window.point = point
     }
+
     // 地图控件添加函数
     function addMapControl () {
       // 修改控件配置
@@ -97,25 +105,31 @@ body{height:100%;margin:0px;padding:0px}
             strokeColor: '#000',
             fillOpacity: 1,
             fillColor: fillColor[index]
-          }) // 建立多边形覆盖物
+          })
+          // 建立多边形覆盖物
           map.addOverlay(ply) // 添加覆盖物
           pointArray = pointArray.concat(ply.getPath())
         }
         if (cityName === '湖南') {
           map.setViewport(pointArray) // 调整视野
-        }        
+        }
+        // 添加曲线
+        setTimeout(() => {
+          createLine()
+        }, 200)
       })
     }
     
     // 定义标注图标 通过Icon类可实现自定义标注的图标，下面示例通过参数MarkerOptions的icon属性进行设置，也可以使用marker.setIcon()方法。
     // 编写自定义函数，创建标注
     // 生成icon
-    function createIcon (point) {
+    function createIcon (points, cityName) {
+      // console.log(points, cityName)
       // 定义一个空数组接受地图标注用于点聚合使用
       let markerPoints = []
       // 自定义矢量icon
-      // 创建标注对象并添加到地图
-      let marker = new BMap.Marker(new BMap.Point(point.lng, point.lat), {
+      // 创建标注对象并添加到地图 point
+      let marker = new BMap.Marker(new BMap.Point(points.lng, points.lat), {
         // 初始化小飞机Symbol
         icon: new BMap.Symbol(BMap_Symbol_SHAPE_POINT, {
           scale: 1.2,// 图标缩放大小
@@ -124,38 +138,85 @@ body{height:100%;margin:0px;padding:0px}
           fillOpacity: 1// 填充透明度
         })
       })
+      // 创建标注对象并添加到地图 Plane 此处为全局的point
+      let markerPlane = new BMap.Marker(new BMap.Point(point.lng, point.lat), {
+        // 初始化小飞机Symbol
+        icon: new BMap.Symbol(BMap_Symbol_SHAPE_PLANE, {
+          scale: 1,// 图标缩放大小
+          fillColor: 'red',// 填充颜色
+          rotation: 10,
+          fillOpacity: 0.4// 填充透明度
+        })
+      })
       markerPoints.push(marker)
       map.addOverlay(marker)
-      createLine()
+      map.addOverlay(markerPlane)
+
+      // 跳动的动画
+      // marker.setAnimation(BMAP_ANIMATION_BOUNCE)
+
       // 事件监听
-      marker.addEventListener('click', () => {
-        console.log('被点击了')
+      marker.addEventListener('click', (e) => {
+        // 开启信息窗口
+        openInfo(cityName, e)
+        // 获取所有标注点
+        let allOverlay = map.getOverlays()
+        for (let i = 0; i < allOverlay.length; i++) {
+          // console.log(allOverlay[i])
+          if (typeof allOverlay[i].setAnimation === 'function') {
+            // 清除跳动动画
+            allOverlay[i].setAnimation()
+            if (allOverlay[i].point.lat === points.lat && allOverlay[i].point.lng === points.lng &&allOverlay[i].point.lat !== null) {
+              // 为当前点添加跳动动画
+              allOverlay[i].setAnimation(BMAP_ANIMATION_BOUNCE)
+            }
+          }
+        }
+        // console.log('被点击了')
       })
       // 可拖拽标注
       // marker.enableDragging()
       marker.addEventListener('dragend', (e) => {
-        console.log('当前位置: ' + e.point.lng + e.point.lat)
+        console.log('当前位置: ' + e.points.lng + e.points.lat)
       })
     }
-    // 定义一个空数组接受地图绘制曲线使用
-    let doubleCitys = []
+
     // 创建标注点
     function addMarker () {
-      console.log(citysCenters)
-      doubleCitys.push(point)
       for (let i = 0; i < citysCenters.length; i++) {
         let points = new BMap.Point(citysCenters[i][0], citysCenters[i][1])
         if (i !== 0) {
-          doubleCitys.push(points)
+          doubleCitys.push([point, points])
         }
-        createIcon(points)
+        createIcon(points, citys[i + 1])
       }
     }
+
     // 创建弧线对象
     function createLine () {
-      let curve = new BMapLib.CurveLine(doubleCitys, {strokeColor: 'blue', strokeWeight: 3, strokeOpacity: 0.5})
-      // 添加到地图中
-      map.addOverlay(curve)
+      // console.log(doubleCitys)
+      for (let i = 0; i < doubleCitys.length; i++) {
+        let curve = new BMapLib.CurveLine(doubleCitys[i], {strokeColor: 'orange', strokeWeight: 2, strokeOpacity: 0.2})
+        // 添加到地图中
+        map.addOverlay(curve)
+      }
+    }
+
+    // 创建信息窗口对象
+    function openInfo (content, e) {
+      let p = e.target
+      let _point = new BMap.Point(p.getPosition().lng, p.getPosition().lat)
+      let opts = {
+        width: 300,
+        height: 120,
+        title: content + '疫苗库存状况',
+        // 设置允许信息窗发送短息
+        enableMessage: true,
+        message: '亲耐滴，晚上一起吃个饭吧？戳下面的链接看下地址喔~'
+      }
+      let infoWindow = new BMap.InfoWindow(content, opts)
+      // 开启信息窗口
+      map.openInfoWindow(infoWindow, _point)
     }
     // 点聚合
     // let markerClusterer = new BMapLib.MarkerClusterer(map, {markers: markerPoints})
