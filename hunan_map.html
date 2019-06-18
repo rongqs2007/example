@@ -34,6 +34,8 @@ body{height:100%;margin:0px;padding:0px}
     let doubleCitys = []
     // 路线终点
     let epoi = []
+    // 定义一个空数组接受地图标注用于点聚合使用
+    let markerPoints = []
     // 创建和初始化地图函数：
     function initMap () {
       createMap()
@@ -51,7 +53,9 @@ body{height:100%;margin:0px;padding:0px}
       }
       // setMapEvent() // 设置地图事件
       // 向地图中添加marker
-      addMarker() 
+      addMarker()
+      // 点聚合
+      // let markerClusterer = new BMapLib.MarkerClusterer(map, {markers: markerPoints})
     }
 
     // 创建地图实例
@@ -116,12 +120,9 @@ body{height:100%;margin:0px;padding:0px}
         }
         // 添加曲线
         setTimeout(() => {
-          initLine()
           createLine()
         }, 200)
-        setTimeout(function(){
-          run()
-        },1000)
+        initLine()
       })
     }
     
@@ -129,10 +130,9 @@ body{height:100%;margin:0px;padding:0px}
     // 编写自定义函数，创建标注
     // 生成icon
     // 创建标注对象并添加到地图 point
-    function createIcon (points, cityName) {
+    function createIcon (points, cityName, num) {
       // console.log(points, cityName)
-      // 定义一个空数组接受地图标注用于点聚合使用
-      let markerPoints = []
+      
       // 自定义矢量icon
       // let marker = new BMap.Marker(new BMap.Point(points.lng, points.lat), {
       //   // 初始化point
@@ -143,10 +143,26 @@ body{height:100%;margin:0px;padding:0px}
       //     fillOpacity: 1// 填充透明度
       //   })
       // })
-      let myIcon = new BMap.Icon('images/greenicon.png', new BMap.Size(48,48))
+      let myIcon = null
+      if (num === 0) {
+        myIcon = new BMap.Icon('images/logoicon.png', new BMap.Size(48,48))
+      } else if (num > 8) {
+        myIcon = new BMap.Icon('images/grayicon.png', new BMap.Size(48,48))
+      } else {
+        myIcon = new BMap.Icon('images/greenicon.png', new BMap.Size(48,48))
+      }
       let marker = new BMap.Marker(new BMap.Point(points.lng, points.lat), {icon: myIcon})
+      // 随机添加几个标注点
+      let markerRandomA = null
+      let markerRandomB = null
+      if (num !== 0) {
+        markerRandomA = new BMap.Marker(new BMap.Point(points.lng + Math.random() * 0.2, points.lat - Math.random() * 0.5), {icon: myIcon})
+        markerRandomB = new BMap.Marker(new BMap.Point(points.lng + Math.random() * 0.3, points.lat + Math.random() * 0.1), {icon: myIcon})
+      }
       markerPoints.push(marker)
       map.addOverlay(marker)
+      map.addOverlay(markerRandomA)
+      map.addOverlay(markerRandomB)
 
       let _infoWindow = openInfo(cityName)
       // 监听信息窗口开启
@@ -219,7 +235,7 @@ body{height:100%;margin:0px;padding:0px}
         if (i !== 0) {
           doubleCitys.push([point, points])
         }
-        createIcon(points, citys[i + 1])
+        createIcon(points, citys[i + 1], i)
       }
       if (doubleCitys !== []) {
         for (let j = 0; j < doubleCitys.length; j++) {
@@ -265,10 +281,11 @@ body{height:100%;margin:0px;padding:0px}
       
       // console.log('终点', epoi)
       // 搜索一条线路
-      for (let i = 0; i < epoi.length; i++) {
+      // for (let i = 0; i < epoi.length; i++) {
         // 驾车实例,并设置回调
-        drivingSearch(startPoints, epoi[i])
-      }
+        drivingSearch(startPoints, epoi[7])
+        drivingSearch(startPoints, epoi[9])
+      // }
     }
     // 驾车运行路线方法
     function drivingSearch (Start, End) {
@@ -277,6 +294,7 @@ body{height:100%;margin:0px;padding:0px}
     }
     function run () {
       for (let m = 0; m < linesPoints.length; m++) {
+        console.log(linesPoints.length)
         let pts = linesPoints[m]
         let len = pts.length
         let carMk = createCars(pts[0])
@@ -293,7 +311,7 @@ body{height:100%;margin:0px;padding:0px}
         }
       }
     }
-    function drawLine(results){
+    function drawLine (results) {
       let opacity = 0.45;
       let planObj = results.getPlan(0);
       let b = new Array();
@@ -329,7 +347,7 @@ body{height:100%;margin:0px;padding:0px}
         }
         // 起点和终点放在最上面
         if(imgType == 1){
-          marker.setTop(true);
+          // marker.setTop(true);
         }
         // map.addOverlay(marker);
       }
@@ -338,7 +356,7 @@ body{height:100%;margin:0px;padding:0px}
           bounds.push(points[i]);
           b.push(points[i]);
         }
-      } 
+      }
       // 绘制驾车步行线路
       for (let i = 0; i < planObj.getNumRoutes(); i++){
         let route = planObj.getRoute(i);
@@ -359,9 +377,10 @@ body{height:100%;margin:0px;padding:0px}
       // addMarkerFun(results.getStart().point,1,0);
       linesPoints[linesPoints.length] = b;
     }
-    // 点聚合
-    // let markerClusterer = new BMapLib.MarkerClusterer(map, {markers: markerPoints})
     initMap()
+    setTimeout(function(){
+      run()
+    },1000)
     // console.log(map)
   </script>
 </body>
