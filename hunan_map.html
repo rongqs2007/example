@@ -16,10 +16,11 @@ body{height:100%;margin:0px;padding:0px}
 // v3.0版本的引用方式：src="http://api.map.baidu.com/api?v=3.0&ak=您的密钥"
 </script>
 <!-- 点聚合js文件 -->
-<script type="text/javascript" src="images/TextIconOverlay_min.js"></script>
-<script type="text/javascript" src="images/MarkerClusterer_min.js"></script>
+<script src="images/TextIconOverlay_min.js"></script>
+<script src="images/MarkerClusterer_min.js"></script>
 <!-- 绘制曲线js文件 -->
-<script type="text/javascript" src="images/CurveLine.min.js"></script>
+<script src="images/CurveLine.min.js"></script>
+<script src="images/jquery-3.3.1.min.js"></script>
 </head>
 <body>
   <div id="container"></div>
@@ -36,8 +37,23 @@ body{height:100%;margin:0px;padding:0px}
     let epoi = []
     // 定义一个空数组接受地图标注用于点聚合使用
     let markerPoints = []
+    // 个性化的地图样式
+    function getSetMapStyle () {
+      $.ajax({
+        type: 'GET',
+        url: 'images/custom_map_config.json',
+        dataType: 'json',
+        success: function (data) {
+          // 个性化的样式
+          console.log(data)
+          map.setMapStyleV2({styleJson: data})
+        }
+      })
+    }
     // 创建和初始化地图函数：
     function initMap () {
+      // 个性化的地图样式
+      getSetMapStyle()
       createMap()
       // 向地图添加控件
       addMapControl()
@@ -56,6 +72,13 @@ body{height:100%;margin:0px;padding:0px}
       addMarker()
       // 点聚合
       // let markerClusterer = new BMapLib.MarkerClusterer(map, {markers: markerPoints})
+      // 覆盖物的添加顺序 越靠后层次越高 这里延时加载驾车路线的添加覆盖物确保层级的优先 路线加载完后延时执行动态运输骑车
+      setTimeout(() => {
+        initLine()
+        setTimeout(() => {
+          run()
+        }, 1000)
+      },200)
     }
 
     // 创建地图实例
@@ -122,7 +145,6 @@ body{height:100%;margin:0px;padding:0px}
         setTimeout(() => {
           createLine()
         }, 200)
-        initLine()
       })
     }
     
@@ -145,11 +167,11 @@ body{height:100%;margin:0px;padding:0px}
       // })
       let myIcon = null
       if (num === 0) {
-        myIcon = new BMap.Icon('images/logoicon.png', new BMap.Size(48,48))
+        myIcon = new BMap.Icon('images/logoicon.png', new BMap.Size(24,24))
       } else if (num > 8) {
-        myIcon = new BMap.Icon('images/grayicon.png', new BMap.Size(48,48))
+        myIcon = new BMap.Icon('images/grayicon.png', new BMap.Size(24,24))
       } else {
-        myIcon = new BMap.Icon('images/greenicon.png', new BMap.Size(48,48))
+        myIcon = new BMap.Icon('images/greenicon.png', new BMap.Size(24,24))
       }
       let marker = new BMap.Marker(new BMap.Point(points.lng, points.lat), {icon: myIcon})
       // 随机添加几个标注点
@@ -176,7 +198,7 @@ body{height:100%;margin:0px;padding:0px}
       })
       // 事件监听
       marker.addEventListener('click', (e) => {
-        e.domEvent.stopPropagation()
+        // e.domEvent.stopPropagation()
         let p = e.target
         let _point = new BMap.Point(p.getPosition().lng, p.getPosition().lat)
         // 开启信息窗口
@@ -218,13 +240,7 @@ body{height:100%;margin:0px;padding:0px}
     }
     // 汽车图
     function createCars (pts) {
-      let myIcon = new BMap.Icon('images/caricon.png', new BMap.Size(50,40))
-      let markerPlane = new BMap.Marker(pts, {icon: myIcon})
-      return markerPlane
-    }
-    // 门诊icon1
-    function createMZOne (pts) {
-      let myIcon = new BMap.Icon('images/greenicon.png', new BMap.Size(48,48))
+      let myIcon = new BMap.Icon('images/caricon.png', new BMap.Size(20,14))
       let markerPlane = new BMap.Marker(pts, {icon: myIcon})
       return markerPlane
     }
@@ -279,16 +295,17 @@ body{height:100%;margin:0px;padding:0px}
       // 清空覆盖物
       // map.clearOverlays()
       
-      // console.log('终点', epoi)
       // 搜索一条线路
       // for (let i = 0; i < epoi.length; i++) {
-        // 驾车实例,并设置回调
-        drivingSearch(startPoints, epoi[7])
-        drivingSearch(startPoints, epoi[9])
+      //   // 驾车实例,并设置回调
+      //   drivingSearch(startPoints, epoi[i])
       // }
+      drivingSearch(startPoints, epoi[9])
+      drivingSearch(startPoints, epoi[11])
     }
     // 驾车运行路线方法
     function drivingSearch (Start, End) {
+      // let drivingLine = new BMap.DrivingRoute(map, {renderOptions:{map: map, autoViewport: true}})
       let drivingLine = new BMap.DrivingRoute(map, {onSearchComplete: drawLine})
       drivingLine.search(Start, End)
     }
@@ -298,6 +315,7 @@ body{height:100%;margin:0px;padding:0px}
         let pts = linesPoints[m]
         let len = pts.length
         let carMk = createCars(pts[0])
+        carMk.setTop(true)
         map.addOverlay(carMk)
         resetMkPoint(1, len, pts, carMk)
       }
@@ -312,45 +330,8 @@ body{height:100%;margin:0px;padding:0px}
       }
     }
     function drawLine (results) {
-      let opacity = 0.45;
-      let planObj = results.getPlan(0);
+      let planObj = results.getPlan(0)
       let b = new Array();
-      let addMarkerFun = function(point,imgType,index,title){
-        let url;
-        let width;
-        let height
-        let myIcon;
-        // imgType:1的场合，为起点和终点的图；2的场合为车的图形
-        if(imgType == 1){
-          url = "http://lbsyun.baidu.com/jsdemo/img/dest_markers.png";
-          width = 42;
-          height = 34;
-          myIcon = new BMap.Icon(url,new BMap.Size(width, height),{offset: new BMap.Size(14, 32),imageOffset: new BMap.Size(0, 0 - index * height)});
-        }else{
-          url = "http://lbsyun.baidu.com/jsdemo/img/trans_icons.png";
-          width = 22;
-          height = 25;
-          let d = 25;
-          let cha = 0;
-          let jia = 0
-          if(index == 2){
-            d = 21;
-            cha = 5;
-            jia = 1;
-          }
-          myIcon = new BMap.Icon(url,new BMap.Size(width, d),{offset: new BMap.Size(10, (11 + jia)),imageOffset: new BMap.Size(0, 0 - index * height - cha)});
-        }
-        
-        let marker = new BMap.Marker(point, {icon: myIcon});
-        if(title != null && title != ""){
-          marker.setTitle(title);
-        }
-        // 起点和终点放在最上面
-        if(imgType == 1){
-          // marker.setTop(true);
-        }
-        // map.addOverlay(marker);
-      }
       let addPoints = function (points){
         for(let i = 0; i < points.length; i++){
           bounds.push(points[i]);
@@ -359,28 +340,25 @@ body{height:100%;margin:0px;padding:0px}
       }
       // 绘制驾车步行线路
       for (let i = 0; i < planObj.getNumRoutes(); i++){
-        let route = planObj.getRoute(i);
-        if (route.getDistance(false) <= 0){continue;}
-        addPoints(route.getPath());
+        let route = planObj.getRoute(i)
+        let _zIndex
+        if (route.getDistance(false) <= 0) {continue}
+        addPoints(route.getPath())
+        let routes = new BMap.Polyline(route.getPath(), {strokeColor: "#44b479",strokeOpacity:1,strokeWeight:4,enableMassClear:true})
+        let _routes = new BMap.Polyline(route.getPath(), {strokeColor: "#44b479",strokeOpacity:0.5,strokeWeight:4,enableMassClear:true})
+        // routes.setTop(true)
+        // _routes.setTop(true)
         // 驾车线路
         if(route.getRouteType() == BMAP_ROUTE_TYPE_DRIVING){
-          map.addOverlay(new BMap.Polyline(route.getPath(), {strokeColor: "#44b479",strokeOpacity:1,strokeWeight:3,enableMassClear:true}));
+          map.addOverlay(routes)
         }else{
         // 步行线路有可能为0
-          map.addOverlay(new BMap.Polyline(route.getPath(), {strokeColor: "#44b479",strokeOpacity:1,strokeWeight:3,enableMassClear:true}));
+          map.addOverlay(_routes)
         }
-      } 
-      // map.setViewport(bounds); 
-      // 终点
-      // addMarkerFun(results.getEnd().point,1,1);
-      // 开始点
-      // addMarkerFun(results.getStart().point,1,0);
-      linesPoints[linesPoints.length] = b;
+      }
+      linesPoints[linesPoints.length] = b
     }
     initMap()
-    setTimeout(function(){
-      run()
-    },1000)
     // console.log(map)
   </script>
 </body>
