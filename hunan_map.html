@@ -45,15 +45,12 @@ body{height:100%;margin:0px;padding:0px}
         dataType: 'json',
         success: function (data) {
           // 个性化的样式
-          console.log(data)
           map.setMapStyleV2({styleJson: data})
         }
       })
     }
     // 创建和初始化地图函数：
     function initMap () {
-      // 个性化的地图样式
-      getSetMapStyle()
       createMap()
       // 向地图添加控件
       addMapControl()
@@ -64,12 +61,14 @@ body{height:100%;margin:0px;padding:0px}
         } else {
           setTimeout(() => {
             getBoundary(citys[i], i)
-          }, 200)
+          }, 300)
         }
       }
       // setMapEvent() // 设置地图事件
       // 向地图中添加marker
       addMarker()
+      // 个性化的地图样式
+      getSetMapStyle()
       // 点聚合
       // let markerClusterer = new BMapLib.MarkerClusterer(map, {markers: markerPoints})
       // 覆盖物的添加顺序 越靠后层次越高 这里延时加载驾车路线的添加覆盖物确保层级的优先 路线加载完后延时执行动态运输骑车
@@ -77,7 +76,7 @@ body{height:100%;margin:0px;padding:0px}
         initLine()
         setTimeout(() => {
           run()
-        }, 1000)
+        }, 3000)
       },200)
     }
 
@@ -258,7 +257,6 @@ body{height:100%;margin:0px;padding:0px}
           epoi.push(doubleCitys[j][1])
         }
       }
-      console.log(epoi)
     }
 
     // 创建弧线对象
@@ -285,7 +283,7 @@ body{height:100%;margin:0px;padding:0px}
       return infoWindow
     }
 
-    let bounds = null
+    // 运输线上点的集合
     let linesPoints = null
     // 起点长沙市
     let startPoints = new BMap.Point(112.94995686314348, 28.24290780342998)
@@ -296,22 +294,26 @@ body{height:100%;margin:0px;padding:0px}
       // map.clearOverlays()
       
       // 搜索一条线路
-      // for (let i = 0; i < epoi.length; i++) {
-      //   // 驾车实例,并设置回调
-      //   drivingSearch(startPoints, epoi[i])
-      // }
-      drivingSearch(startPoints, epoi[9])
-      drivingSearch(startPoints, epoi[11])
+      for (let i = 0; i < epoi.length; i++) {
+        // 驾车实例,并设置回调
+        drivingSearch(startPoints, epoi[i], i)
+      }
     }
     // 驾车运行路线方法
-    function drivingSearch (Start, End) {
-      // let drivingLine = new BMap.DrivingRoute(map, {renderOptions:{map: map, autoViewport: true}})
-      let drivingLine = new BMap.DrivingRoute(map, {onSearchComplete: drawLine})
-      drivingLine.search(Start, End)
+    let drivingLine = []
+    let drivingLines = null
+    function drivingSearch (Start, End, I) {
+      drivingLine.push(new BMap.DrivingRoute(map, {onSearchComplete: drawLine}))
+      drivingLines = drivingLine[I]
+      // 稍加延时确保所有对应的起终点数据获取 能进行search方法
+      setTimeout(() => {
+        drivingLines.search(Start, End)
+      }, 200)
+      // console.log(drivingLines)
     }
     function run () {
       for (let m = 0; m < linesPoints.length; m++) {
-        console.log(linesPoints.length)
+        console.log('运输车数量:', linesPoints.length)
         let pts = linesPoints[m]
         let len = pts.length
         let carMk = createCars(pts[0])
@@ -330,33 +332,17 @@ body{height:100%;margin:0px;padding:0px}
       }
     }
     function drawLine (results) {
-      let planObj = results.getPlan(0)
-      let b = new Array();
-      let addPoints = function (points){
-        for(let i = 0; i < points.length; i++){
-          bounds.push(points[i]);
-          b.push(points[i]);
+      let pts = []
+      let roads
+      if (drivingLines.getStatus() === BMAP_STATUS_SUCCESS) {
+        // 获取每条运输线路上的所有点
+        for (let i = 0; i < drivingLine.length; i++) {
+          pts = drivingLines.getResults().getPlan(0).getRoute(0).getPath()
+          roads = new BMap.Polyline(pts, {strokeColor: "#44b479",strokeOpacity:1,strokeWeight:4,enableMassClear:true})
+          map.addOverlay(roads)
         }
+        linesPoints[linesPoints.length] = pts
       }
-      // 绘制驾车步行线路
-      for (let i = 0; i < planObj.getNumRoutes(); i++){
-        let route = planObj.getRoute(i)
-        let _zIndex
-        if (route.getDistance(false) <= 0) {continue}
-        addPoints(route.getPath())
-        let routes = new BMap.Polyline(route.getPath(), {strokeColor: "#44b479",strokeOpacity:1,strokeWeight:4,enableMassClear:true})
-        let _routes = new BMap.Polyline(route.getPath(), {strokeColor: "#44b479",strokeOpacity:0.5,strokeWeight:4,enableMassClear:true})
-        // routes.setTop(true)
-        // _routes.setTop(true)
-        // 驾车线路
-        if(route.getRouteType() == BMAP_ROUTE_TYPE_DRIVING){
-          map.addOverlay(routes)
-        }else{
-        // 步行线路有可能为0
-          map.addOverlay(_routes)
-        }
-      }
-      linesPoints[linesPoints.length] = b
     }
     initMap()
     // console.log(map)
