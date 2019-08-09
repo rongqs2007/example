@@ -1,4 +1,4 @@
-C:\Users\Public\Nwt\cache\recv\王宝宝
+C:\Users\Public\Nwt\cache\recv\王宝宝  https://ke.qq.com/course/429677#term_id=100513022
 
 
 1、echarts（地图、散点图、饼图、柱状图）
@@ -365,9 +365,28 @@ scrollbarWidth = objDiv.offsetWidth - objDiv.clientWidth
 objDiv.remove()
 return scrollbarWidth
 
+21、insertBefore()方法可在已有的子节点前插入一个新的子节点
 
-
-
+22、// 取一个对象下面的一个字段名后缀是数字递增的动态获取
+// eval()是程序语言中的函数，功能是获取返回值，不同语言大同小异，函数原型是返回值 = eval( codeString )，如果eval函数在执行时遇到错误，则抛出异常给调用者。
+console.log(eval(`allDatas.data${i}`))
+let diffDatas = eval(`allDatas.data${i}`)
+for (let j = 0; j < allDatas.name.length; j++ ) {
+	_series.push(
+		{
+			name: allDatas.name[j],
+			type: 'bar',
+			stack: true,	
+			barWidth: 50,
+			itemStyle: {
+				normal: {
+					color: allDatas.color[j]
+				}
+			},
+			data: diffDatas[j]
+            	}
+	)
+}
 
 
 
