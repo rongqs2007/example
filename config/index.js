@@ -10,7 +10,16 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    proxyTable: {
+        '/api': {
+            // 测试环境
+            target: 'http://localhost:8081/',  // target：就是需要请求地址的接口域名
+            changeOrigin: true,  //是否跨域
+            pathRewrite: {
+                '^/api': 'api'   //需要rewrite重写的,
+            }
+        }
+    },
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
