@@ -7,7 +7,7 @@ export const ProcessDatas = {
     _mockDatas () {
       let data = this.$Mock.mock({
         // 属性 list 的值是一个数组  'name|1' 表示随机选取 1 个元素，作为最终值 'name|+1' 表示按顺序选取 1 个元素，作为最终值
-        'list|50': [{
+        'list|5': [{
           'originalTable|+1': [
             '测试数据测试数据' + Math.round(Math.random() * 100),
             '测试数据测试数据' + Math.round(Math.random() * 100),

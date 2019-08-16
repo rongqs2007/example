@@ -13,14 +13,18 @@
           数组从小到大的排列：{{ arrB }}
         </div>
         <div class="posGrid">
-          <push-grid></push-grid>
+          <!-- <push-grid></push-grid> -->
         </div>
         <div class="posMap">
-          <map-api></map-api>
+          <!-- <map-api></map-api> -->
         </div>
         <ul ref="listsUl">
           <li v-for="(item, index) in mockDatas" :key="index">{{ item.originalTable }}</li>
         </ul>
+        <div class="axiosBox">
+          <Button type="success" long @click="handleJump">路由跳转</Button>
+        </div>
+        <router-view></router-view>
       </Content>
       <Footer>Footer</Footer>
     </Layout>
@@ -54,6 +58,11 @@ export default {
   computed: {
   },
   methods: {
+    handleJump () {
+      this.$router.push({
+        path: '/apiaxios'
+      })
+    },
     // 调用动态创建的元素插入元素集合的第n位并设置内容及样式
     _createElement () {
       // 是否开启点击事件
@@ -147,7 +156,6 @@ export default {
 ul{
   padding: 20px;
 }
-
 li{
   height: 30px;
   line-height: 30px;
