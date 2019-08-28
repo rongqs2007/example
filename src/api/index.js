@@ -15,3 +15,7 @@ export const getLogin = (username) => axios.request({
 })
 
 export const getValidate = () => axios.request({url: '/validate'})
+
+export const getExample = () => axios.request({
+  url: '/org/queryOrgByOrgCode/621122008'
+})

@@ -9,18 +9,24 @@
 </template>
 
 <script>
-import { getTest } from '../../api/index'
+import { getExample } from '../../api/index'
 export default {
   name: 'ApiAxios',
   methods: {
     _getApi () {
-      getTest().then((res) => {
+      getExample().then((res) => {
         console.log(res)
       })
     }
   },
   mounted () {
     this._getApi()
+  },
+  created () {
+    this.$axios('http://192.168.0.12:8085/psy-query')
+      .then(res => {
+        console.log(res)
+      })
   }
 }
 </script>

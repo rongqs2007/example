@@ -13,10 +13,10 @@ module.exports = {
     proxyTable: {
         '/api': {
             // 测试环境
-            target: 'http://localhost:8081/',  // target：就是需要请求地址的接口域名
-            changeOrigin: true,  //是否跨域
+            target: 'http://192.168.0.12:8085/psy-query',  // target：就是需要请求地址的接口域名
+            changeOrigin: true,  // 是否跨域
             pathRewrite: {
-                '^/api': 'api'   //需要rewrite重写的,
+                '^/api': 'api'   // 需要rewrite重写的,
             }
         }
     },

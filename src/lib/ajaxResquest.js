@@ -4,11 +4,15 @@
 
 import axios from 'axios'
 
+// let token = localStorage.getItem('token')
+// axios.defaults.headers.common['token'] = token
+// axios.defaults.headers.common['Content-Type'] = 'application/json;charset=utf-8'
+
 // 每个请求的拦截器方法可能不一样
 // 用户请求设置的方法每次返回一个新的实例避免多次请求拦截
 class AjaxRequest {
   constructor () {
-    this.baseURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/'
+    this.baseURL = process.env.NODE_ENV === 'development' ? 'http://192.168.0.12:8085/psy-query' : '/'
     this.timeout = 2000
   }
   // 用户请求设置的方法
@@ -20,7 +24,7 @@ class AjaxRequest {
     // 设置拦截器
     instance.interceptors.request.use(
       (config) => {
-        config.headers.Authorization = localStorage.getItem('token')
+        // config.headers.Authorization = localStorage.getItem('token')
         return config
       },
       (err) => {
