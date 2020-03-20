@@ -1,4 +1,3 @@
-import EventBus from './EventBus'
 // 改变浏览器窗口的时候图形跟随容器大小改变自适应
 export function changeResize (objID) {
   // 针对页面中多个echarts图标跟随浏览器大小改变而缩放时候使用
@@ -141,7 +140,7 @@ export function minSort (Arr) {
 }
 
 // 创建一个元素并将其插入元素集合内的第n个位置
-export function createEleLi (n, Tag, parentId, Content, Styles, Flag) {
+export function createEleLi (n, Tag, parentId, Content, Styles, Flag, This) {
   let _li = document.createElement(Tag)
   _li.innerHTML = Content
   for (let i in Styles) {
@@ -150,7 +149,61 @@ export function createEleLi (n, Tag, parentId, Content, Styles, Flag) {
   parentId.insertBefore(_li, parentId.childNodes[n])
   if (Flag) {
     _li.onclick = () => {
-      EventBus.$emit('onClick', _li)
+      This.$EventBus.$emit('onClick', _li)
     }
   }
+}
+
+// 计算设定时间日期与当前日期的天数差值
+export function computedDays (Day) {
+  let _inputTime = new Date(Day).getTime()
+  let _currTime = new Date().getTime()
+  let diffVal = Math.floor((_currTime - _inputTime) / (1000 * 60 * 60 * 24))
+  if (diffVal >= 10) {
+    console.log('返回的时间是否大于等于10天 ----- ' + diffVal)
+  }
+}
+
+// 计算输入文字字数限制
+export function computedWords (newval, type, This) {
+  // newval !== null 的时候是避免v-if中html没有渲染元素产生的报错信息
+  if (newval !== '' && newval !== null) {
+    let _changeString = newval.toString()
+    This.words = 20 - _changeString.length
+    if (_changeString.length > 20) {
+      This.$Message[type]({
+        background: true,
+        content: '已超过20个汉字！'
+      })
+      // 及时更新返回输入框的值保持不变 当超出20个范围的时候
+      This.$nextTick(() => {
+        This.value = _changeString.substring(0, 20)
+      })
+    }
+  } else {
+    This.words = 20
+  }
+}
+
+// 数据类型的判断
+// 如果对象是 Array 或 Date ，就无法通过 typeof 来判断他们的类型，因为都是 返回 object。
+// constructor属性返回所有JS变量的构造函数
+export function judgeDataType (Data, This) {
+  let _type = ['String', 'Number', 'Boolean', 'Array', 'Object', 'Date', 'Function']
+  if (Data !== NaN && Data !== null && Data !== undefined) {
+    for (let i = 0; i < _type.length; i++) {
+      if (Data.constructor.toString().indexOf(_type[i]) > -1) {
+        return _type[i]
+      }
+    }
+  }
+}
+
+// 数组去重, 并返回去重后的新数组，此方法不会改变原数组
+export function arrayRemoval (Arr, This) {
+  let newArr = Arr.filter(function (item, index, Arr) {
+    // 当前元素，在原始数组中的第一个索引==当前索引值，否则返回当前元素
+    return Arr.indexOf(item, 0) === index
+  })
+  return newArr
 }

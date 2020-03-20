@@ -1,7 +1,6 @@
 /**
  * 虚拟数据的mock公共方法
  */
-import EventBus from '../utils/EventBus'
 export const ProcessDatas = {
   methods: {
     _mockDatas () {
@@ -103,7 +102,7 @@ export const ProcessDatas = {
   },
   destroyed () {
     // 清除定时器,最优化放在这里 无论是删除原件还是跳转到其他页面
-    EventBus.$off()
+    this.$EventBus.$off()
   },
   watch: {
     // 监听路由地址

@@ -16,13 +16,26 @@
           <!-- <push-grid></push-grid> -->
         </div>
         <div class="posMap">
-          <!-- <map-api></map-api> -->
+          <!-- <map-api :height="height"></map-api> -->
         </div>
         <ul ref="listsUl">
           <li v-for="(item, index) in mockDatas" :key="index">{{ item.originalTable }}</li>
         </ul>
+        <div class="comCss">
+          <Input v-model="value" placeholder="Enter something..." style="width: 300px" />
+          <span v-if="value !== '' && value.length < 20" style="color: red;">{{ words }}</span>
+        </div>
+        <div class="comCss">
+          判断数据类型： {{ isArray }}
+        </div>
+        <div class="comCss">
+          时间转换格式 moment----Js： {{ this.$moment().startOf('day').format('YYYY-MM-DD HH:mm:ss') }}
+        </div>
+        <div class="comCss">
+          时间转换格式 moment----Js： {{ this.$moment().endOf('day').format('YYYY-MM-DD HH:mm:ss') }}
+        </div>
         <div class="axiosBox">
-          <Button type="success" long @click="handleJump">路由跳转</Button>
+          <!-- <Button type="success" long @click="handleJump">路由跳转</Button> -->
         </div>
         <router-view></router-view>
       </Content>
@@ -34,9 +47,8 @@
 <script>
 import PushGrid from '../common/pushGrid'
 import MapApi from '../common/mapApi'
-import EventBus from '../utils/EventBus'
 import { ProcessDatas } from '../mixins/index'
-import { _scrollbarWidth, maxSort, minSort, createEleLi } from '../utils/offset'
+import * as myFun from '../utils/offset'
 export default {
   name: 'HomePage',
   mixins: [ProcessDatas],
@@ -46,13 +58,16 @@ export default {
   },
   data () {
     return {
+      height: 600,
       mockDatas: [],
       scrollbarWidth: null,
       arr1: [10, 90, 20, 40, 80, 30, 200],
       arr2: [10, 90, 20, 40, 80, 30, 200],
       arrA: [],
       arrB: [],
-      value: ''
+      value: '',
+      words: 20,
+      isArray: null
     }
   },
   computed: {
@@ -86,7 +101,7 @@ export default {
         cursor: 'pointer'
       }
       // 点击事件方法 对于操作创建的元素本身点击改变自身修饰时候需要在创建之前销毁
-      EventBus.$on('onClick', (obj) => {
+      this.$EventBus.$on('onClick', (obj) => {
         styles.color = '#49ed14'
         textContent = '执行点击事件内容被改变'
         if (n >= lastN) {
@@ -96,24 +111,32 @@ export default {
         }
         // 需要在创建之前销毁
         obj.remove()
-        createEleLi(n, TagName, parentID, textContent, styles, flag)
+        myFun.createEleLi(n, TagName, parentID, textContent, styles, flag, this)
         // 点击事件其他操作对象
         this.scrollbarWidth++
       })
-      createEleLi(n, TagName, parentID, textContent, styles, flag)
+      myFun.createEleLi(n, TagName, parentID, textContent, styles, flag, this)
     }
   },
   mounted () {
     this._createElement()
+    myFun.computedDays('2019-11-10')
   },
   created () {
     // 初始化变量进行赋值,真实接口数据的话只需对对应的变量进行重新赋值即可
     // mock模拟数据
     this.mockDatas = this._mockDatas()
     // 滚动条宽度
-    this.scrollbarWidth = _scrollbarWidth()
-    this.arrA = maxSort(this.arr1)
-    this.arrB = minSort(this.arr2)
+    this.scrollbarWidth = myFun._scrollbarWidth()
+    this.arrA = myFun.maxSort(this.arr1)
+    this.arrB = myFun.minSort(this.arr2)
+
+    this.isArray = myFun.judgeDataType('dsadasds')
+  },
+  watch: {
+    value (newval, oldval) {
+      myFun.computedWords(newval, 'warning', this)
+    }
   }
 }
 </script>
@@ -175,5 +198,8 @@ li{
   background: #7cbce9;
   text-align: center;
   color: #fff;
+}
+.comCss{
+  padding: 10px 20px;
 }
 </style>
