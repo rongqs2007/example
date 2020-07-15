@@ -2,11 +2,12 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import store from './store'
-import BaiduMap from 'vue-baidu-map'
 
 import axios from 'axios'
 import ViewUI from 'view-design'
 import Mock from 'mockjs'
+
+import BaiduMap from 'vue-baidu-map'
 // 引入 ECharts 主模块
 import echarts from 'echarts'
 

@@ -34,6 +34,18 @@
         <div class="comCss">
           时间转换格式 moment----Js： {{ this.$moment().endOf('day').format('YYYY-MM-DD HH:mm:ss') }}
         </div>
+        <div class="comCss">
+          <Input v-model="userID" placeholder="出生日期" style="width: 300px" />
+          <span style="color: red;">出生日期：{{ birth }}</span>
+          <span style="color: green;padding: 0 20px;">性别：{{ sex }}</span>
+          <span style="color: blue;">年龄：{{ age }}</span>
+        </div>
+        <div class="comCss">
+          上传组件
+        </div>
+        <div class="comCss">
+          <AreaMap :dataArr="dataArr"></AreaMap>
+        </div>
         <div class="axiosBox">
           <!-- <Button type="success" long @click="handleJump">路由跳转</Button> -->
         </div>
@@ -47,19 +59,38 @@
 <script>
 import PushGrid from '../common/pushGrid'
 import MapApi from '../common/mapApi'
+import AreaMap from '../common/area-map.vue'
 import { ProcessDatas } from '../mixins/index'
 import * as myFun from '../utils/offset'
+import tools from '../utils/tools'
 export default {
   name: 'HomePage',
   mixins: [ProcessDatas],
   components: {
     PushGrid,
-    MapApi
+    MapApi,
+    AreaMap
   },
   data () {
     return {
       height: 600,
       mockDatas: [],
+      dataArr: [
+        {
+          areacode: '2110000000',
+          latitude: '123.112421',
+          longitude: '41.211679',
+          vaccAreaOrClinic: '辽阳市',
+          vaccCount: 13565248
+        },
+        {
+          areacode: '2113000000',
+          latitude: '116.449559',
+          longitude: '39.926375',
+          vaccAreaOrClinic: '朝阳市',
+          vaccCount: 35400128
+        }
+      ],
       scrollbarWidth: null,
       arr1: [10, 90, 20, 40, 80, 30, 200],
       arr2: [10, 90, 20, 40, 80, 30, 200],
@@ -67,7 +98,11 @@ export default {
       arrB: [],
       value: '',
       words: 20,
-      isArray: null
+      isArray: null,
+      userID: '321322199205264148',
+      birth: '',
+      sex: '',
+      age: ''
     }
   },
   computed: {
@@ -132,10 +167,19 @@ export default {
     this.arrB = myFun.minSort(this.arr2)
 
     this.isArray = myFun.judgeDataType('dsadasds')
+
+    this.birth = tools.getBrithday(this.userID, 1)
+    this.sex = tools.getBrithday(this.userID, 2)
+    this.age = tools.getBrithday(this.userID, 3)
   },
   watch: {
     value (newval, oldval) {
       myFun.computedWords(newval, 'warning', this)
+    },
+    userID (newval, oldval) {
+      this.birth = tools.getBrithday(newval, 1)
+      this.sex = tools.getBrithday(newval, 2)
+      this.age = tools.getBrithday(newval, 3)
     }
   }
 }

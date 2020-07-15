@@ -1,4 +1,4 @@
-****此基础项目依赖iview的UI框架，同时引入了css3动画、axios、数据模拟的mock和状态管理*******
+****此基础项目依赖iview的UI框架，4.0，同时引入了css3动画、axios、数据模拟的mock和状态管理*******
 
 src: 
 	assets: 存放css、图片,其中的globalCSS.css为基础公共css样式控制文件
@@ -11,3 +11,6 @@ static： 静态文件存放位置
 
 *******index.html文件的标题修改
 <title>实际项目单位名称</title>
+
+main.js
+svn://192.168.0.7/62PDIRS/示范区/bbw存储/shensu-admin

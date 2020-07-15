@@ -207,3 +207,26 @@ export function arrayRemoval (Arr, This) {
   })
   return newArr
 }
+
+// 对遍历到的往年数组进行同年份的数据组合 数组
+export function arrayChange (Arr, This) {
+  let _arr = []
+  let _arrB = []
+  let _arrC = []
+  let _arrD = []
+  for (let i = 0; i < _arrB.length; i++) {
+    if (_arrB[i+1] && _arrB[i].year === _arrB[i+1].year) {
+      _arrD.push(_arrB[i])
+    } else {
+      _arrD.push(_arrB[i])
+      _arrC.push(_arrD.slice(0))
+      _arrD.length = 0
+    }
+  }
+  // 因为是数据年份是从大到小的 所以需要倒序一下
+  _arr = _arrC.reverse()
+  // 数据拼接
+  // _arr = _arrC.concat(_arrA)
+  console.log(_arrC, 66666)
+  return _arr
+}
